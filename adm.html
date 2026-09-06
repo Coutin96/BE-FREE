@@ -73,7 +73,7 @@
             margin-top: 10px;
         }
 
-        /* Conteúdo ADM (oculto inicialmente) */
+        /* Conteúdo ADM */
         #adm-content {
             display: none;
         }
@@ -158,6 +158,14 @@
             background: #1e8449;
         }
 
+        .btn-warning {
+            background: #f39c12;
+        }
+
+        .btn-warning:hover {
+            background: #d68910;
+        }
+
         .card-list {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -170,24 +178,67 @@
             padding: 15px;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
             border: 1px solid #ecf0f1;
+            transition: 0.2s;
+        }
+
+        .card-item:hover {
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
         }
 
         .card-item strong {
             color: #2c3e50;
         }
 
-        .card-item .remove-btn {
-            margin-top: 10px;
-            background: #e74c3c;
-            color: #fff;
-            border: none;
-            padding: 5px 12px;
+        .card-item .status-badge {
+            display: inline-block;
+            padding: 2px 12px;
             border-radius: 20px;
-            cursor: pointer;
-            font-size: 12px;
+            font-size: 13px;
+            font-weight: 600;
         }
 
-        .card-item .remove-btn:hover {
+        .status-disponivel {
+            background: #d5f5e3;
+            color: #27ae60;
+        }
+
+        .status-esgotado {
+            background: #fde8e8;
+            color: #e74c3c;
+        }
+
+        .card-item .actions {
+            margin-top: 10px;
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .card-item .actions button {
+            padding: 5px 14px;
+            border: none;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .card-item .actions .btn-toggle {
+            background: #3498db;
+            color: #fff;
+        }
+
+        .card-item .actions .btn-toggle:hover {
+            background: #2980b9;
+        }
+
+        .card-item .actions .btn-remove {
+            background: #e74c3c;
+            color: #fff;
+        }
+
+        .card-item .actions .btn-remove:hover {
             background: #c0392b;
         }
 
@@ -252,6 +303,33 @@
             }
         }
 
+        .filtro-area {
+            display: flex;
+            gap: 20px;
+            align-items: flex-end;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+            background: #fafafa;
+            padding: 15px;
+            border-radius: 12px;
+        }
+
+        .filtro-area label {
+            display: flex;
+            flex-direction: column;
+            font-weight: 500;
+            color: #34495e;
+            font-size: 14px;
+        }
+
+        .filtro-area label select {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            min-width: 200px;
+        }
+
         @media (max-width:768px) {
             .form-grid {
                 grid-template-columns: 1fr;
@@ -259,6 +337,11 @@
 
             .container {
                 padding: 15px;
+            }
+
+            .filtro-area {
+                flex-direction: column;
+                align-items: stretch;
             }
         }
     </style>
@@ -268,7 +351,7 @@
     <div class="container">
         <h1>🔐 Módulo Administrativo</h1>
 
-        <!-- Tela de Login -->
+        <!-- Login -->
         <div id="login-area">
             <h2 style="margin-bottom:20px;">Acesso restrito</h2>
             <input type="password" id="senha-input" placeholder="Digite a senha" />
@@ -276,7 +359,7 @@
             <div id="erro-login" class="erro"></div>
         </div>
 
-        <!-- Conteúdo ADM (protegido) -->
+        <!-- Conteúdo ADM -->
         <div id="adm-content">
             <div style="display:flex; justify-content:flex-end; margin-bottom:20px;">
                 <button id="btn-logout" class="btn btn-danger">Sair</button>
@@ -285,6 +368,7 @@
             <div class="nav-tabs">
                 <button class="active" data-tab="tab-produtos">📦 Produtos</button>
                 <button data-tab="tab-colecoes">💰 Coleções</button>
+                <button data-tab="tab-estoque">📊 Estoque</button>
             </div>
 
             <!-- Aba Produtos -->
@@ -347,13 +431,30 @@
                     <div id="lista-colecoes" class="card-list"></div>
                 </div>
             </div>
+
+            <!-- Aba Estoque -->
+            <div id="tab-estoque" class="tab">
+                <h2>📊 Gerenciar Estoque por Coleção</h2>
+                <div class="alert">
+                    <strong>🔍</strong> Selecione uma coleção para ver todos os produtos. Você pode alternar o status
+                    entre <strong>Disponível</strong> e <strong>Esgotado</strong>, ou remover permanentemente o produto.
+                </div>
+                <div class="filtro-area">
+                    <label>
+                        Coleção
+                        <select id="filtro-colecao">
+                            <option value="">-- Todas as coleções --</option>
+                        </select>
+                    </label>
+                </div>
+                <div id="lista-estoque" class="card-list"></div>
+            </div>
         </div>
     </div>
 
     <script>
         (function () {
-            // ========== CONFIG ==========
-            const SENHA_ADMIN = 'Podeser20'; // Altere aqui a senha
+            const SENHA_ADMIN = 'admin123'; // Altere aqui a senha
             const STORAGE_KEY_PRODUTOS = 'loja_produtos';
             const STORAGE_KEY_COLECOES = 'loja_colecoes';
 
@@ -365,7 +466,7 @@
             function formatMoney(v) { return 'R$ ' + v.toFixed(2).replace('.', ','); }
             function parseMoney(v) { return parseFloat(v) || 0; }
 
-            // ========== RENDER ==========
+            // ========== RENDERIZAÇÕES ==========
             function renderProdutos() {
                 const produtos = getProdutos();
                 const container = document.getElementById('lista-produtos');
@@ -380,6 +481,7 @@
                     <strong>Valor Peça:</strong> ${formatMoney(p.valorPeca)}<br>
                     <strong>Gasto/Peça:</strong> ${formatMoney(p.gastoPorPeca)}<br>
                     <strong>Preço Final:</strong> <span style="color:#27ae60;font-weight:700;">${formatMoney(p.precoFinal)}</span><br>
+                    <strong>Status:</strong> <span class="status-badge ${p.disponivel !== false ? 'status-disponivel' : 'status-esgotado'}">${p.disponivel !== false ? 'Disponível' : 'Esgotado'}</span><br>
                     <strong>Fornecedor:</strong> ${p.fornecedorNome || '-'}<br>
                     <button class="remove-btn" data-index="${idx}">🗑️ Remover</button>
                 </div>
@@ -392,7 +494,8 @@
                             prods.splice(idx, 1);
                             setProdutos(prods);
                             renderProdutos();
-                            popularSelectColecoes();
+                            renderEstoque();
+                            popularSelects();
                         }
                     });
                 });
@@ -427,29 +530,111 @@
                             setProdutos(produtos);
                             renderColecoes();
                             renderProdutos();
-                            popularSelectColecoes();
+                            renderEstoque();
+                            popularSelects();
                         }
                     });
                 });
             }
 
-            function popularSelectColecoes() {
-                const select = document.getElementById('colecao');
+            function renderEstoque() {
+                const produtos = getProdutos();
+                const filtro = document.getElementById('filtro-colecao').value;
+                const container = document.getElementById('lista-estoque');
+                let filtrados = produtos;
+                if (filtro) {
+                    filtrados = produtos.filter(p => p.colecao === filtro);
+                }
+                if (!filtrados.length) {
+                    container.innerHTML = '<p style="color:#999;">Nenhum produto encontrado para esta coleção.</p>';
+                    return;
+                }
+                container.innerHTML = filtrados.map((p, idx) => {
+                    // Índice original no array completo para remoção/edição
+                    const originalIndex = produtos.indexOf(p);
+                    const disponivel = p.disponivel !== false;
+                    return `
+                    <div class="card-item">
+                        <strong>Código:</strong> ${p.codigo}<br>
+                        <strong>Coleção:</strong> ${p.colecao}<br>
+                        <strong>Preço:</strong> ${formatMoney(p.precoFinal)}<br>
+                        <strong>Status:</strong> <span class="status-badge ${disponivel ? 'status-disponivel' : 'status-esgotado'}">${disponivel ? 'Disponível' : 'Esgotado'}</span><br>
+                        <div class="actions">
+                            <button class="btn-toggle" data-index="${originalIndex}">${disponivel ? '🔴 Marcar Esgotado' : '🟢 Reativar'}</button>
+                            <button class="btn-remove" data-index="${originalIndex}">🗑️ Remover</button>
+                        </div>
+                    </div>
+                `;
+                }).join('');
+
+                // Eventos dos botões
+                document.querySelectorAll('#lista-estoque .btn-toggle').forEach(btn => {
+                    btn.addEventListener('click', function () {
+                        const idx = parseInt(this.dataset.index);
+                        const prods = getProdutos();
+                        const p = prods[idx];
+                        if (p) {
+                            p.disponivel = p.disponivel === false ? true : false;
+                            setProdutos(prods);
+                            renderEstoque();
+                            renderProdutos();
+                            // A vitrine atualiza via storage
+                        }
+                    });
+                });
+                document.querySelectorAll('#lista-estoque .btn-remove').forEach(btn => {
+                    btn.addEventListener('click', function () {
+                        const idx = parseInt(this.dataset.index);
+                        if (confirm('Remover este produto permanentemente?')) {
+                            const prods = getProdutos();
+                            prods.splice(idx, 1);
+                            setProdutos(prods);
+                            renderEstoque();
+                            renderProdutos();
+                            popularSelects();
+                        }
+                    });
+                });
+            }
+
+            // ========== POPULAR SELECTS ==========
+            function popularSelects() {
                 const colecoes = getColecoes();
-                const valorAtual = select.value;
-                select.innerHTML = '<option value="">-- Selecione --</option>';
+                const selectProd = document.getElementById('colecao');
+                const selectFiltro = document.getElementById('filtro-colecao');
+
+                // Salva valores atuais
+                const valProd = selectProd.value;
+                const valFiltro = selectFiltro.value;
+
+                // Popula select de cadastro
+                selectProd.innerHTML = '<option value="">-- Selecione --</option>';
                 colecoes.forEach(c => {
                     const opt = document.createElement('option');
                     opt.value = c.nome;
                     opt.textContent = c.nome;
-                    select.appendChild(opt);
+                    selectProd.appendChild(opt);
                 });
-                if (valorAtual && colecoes.some(c => c.nome === valorAtual)) {
-                    select.value = valorAtual;
+                if (valProd && colecoes.some(c => c.nome === valProd)) {
+                    selectProd.value = valProd;
                 }
+
+                // Popula select de filtro (com "Todas")
+                selectFiltro.innerHTML = '<option value="">-- Todas as coleções --</option>';
+                colecoes.forEach(c => {
+                    const opt = document.createElement('option');
+                    opt.value = c.nome;
+                    opt.textContent = c.nome;
+                    selectFiltro.appendChild(opt);
+                });
+                if (valFiltro && colecoes.some(c => c.nome === valFiltro)) {
+                    selectFiltro.value = valFiltro;
+                }
+
                 atualizarGastoEPreco();
             }
 
+            // ========== CÁLCULOS ==========
             function atualizarGastoEPreco() {
                 const colecaoNome = document.getElementById('colecao').value;
                 const valorPeca = parseMoney(document.getElementById('valor-peca').value);
@@ -476,16 +661,16 @@
                 }
             }
 
-            // ========== LOGIN ==========
+            // ========== LOGIN/LOGOUT ==========
             function login(senha) {
                 if (senha === SENHA_ADMIN) {
                     document.getElementById('login-area').style.display = 'none';
                     document.getElementById('adm-content').style.display = 'block';
                     document.getElementById('erro-login').textContent = '';
-                    // Carrega dados
-                    popularSelectColecoes();
+                    popularSelects();
                     renderColecoes();
                     renderProdutos();
+                    renderEstoque();
                     return true;
                 } else {
                     document.getElementById('erro-login').textContent = 'Senha incorreta!';
@@ -501,13 +686,10 @@
             }
 
             document.getElementById('btn-login').addEventListener('click', function () {
-                const senha = document.getElementById('senha-input').value;
-                login(senha);
+                login(document.getElementById('senha-input').value);
             });
             document.getElementById('senha-input').addEventListener('keypress', function (e) {
-                if (e.key === 'Enter') {
-                    document.getElementById('btn-login').click();
-                }
+                if (e.key === 'Enter') document.getElementById('btn-login').click();
             });
             document.getElementById('btn-logout').addEventListener('click', logout);
 
@@ -532,7 +714,7 @@
                 this.reset();
                 document.getElementById('gasto-calculado').value = '';
                 renderColecoes();
-                popularSelectColecoes();
+                popularSelects();
                 alert('Coleção cadastrada com sucesso!');
             });
 
@@ -565,13 +747,19 @@
                     alert('Já existe um produto com este código.');
                     return;
                 }
-                produtos.push({ colecao, codigo, valorPeca, gastoPorPeca, precoFinal, linkFoto, fornecedorNome, fornecedorSocial, fornecedorTelefone });
+                // Novo produto: disponivel = true por padrão
+                produtos.push({
+                    colecao, codigo, valorPeca, gastoPorPeca, precoFinal, linkFoto,
+                    fornecedorNome, fornecedorSocial, fornecedorTelefone,
+                    disponivel: true
+                });
                 setProdutos(produtos);
                 this.reset();
                 document.getElementById('gasto-peca').value = '';
                 document.getElementById('preco-final').value = '';
                 renderProdutos();
-                popularSelectColecoes();
+                renderEstoque();
+                popularSelects();
                 alert('Produto cadastrado com sucesso!');
             });
 
@@ -579,6 +767,9 @@
             document.getElementById('valor-peca').addEventListener('input', atualizarGastoEPreco);
             document.getElementById('valor-total').addEventListener('input', atualizarGastoCalculado);
             document.getElementById('quantidade-pecas').addEventListener('input', atualizarGastoCalculado);
+
+            // Filtro de estoque
+            document.getElementById('filtro-colecao').addEventListener('change', renderEstoque);
 
             // ========== NAVEGAÇÃO ENTRE ABAS ==========
             document.querySelectorAll('.nav-tabs button').forEach(btn => {
@@ -590,12 +781,13 @@
                     if (this.dataset.tab === 'tab-colecoes') {
                         atualizarGastoCalculado();
                     }
+                    if (this.dataset.tab === 'tab-estoque') {
+                        renderEstoque();
+                    }
                 });
             });
 
             // ========== INICIALIZAÇÃO ==========
-            // Tenta manter login se já estiver (não há persistência, mas pode ser adicionada)
-            // Por padrão, mostra login.
             document.getElementById('login-area').style.display = 'block';
             document.getElementById('adm-content').style.display = 'none';
         })();
