@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ADM - Minha Loja Virtual</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: #f5f5f5;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-weight: 300;
+            letter-spacing: 2px;
+        }
+
+        /* Login */
+        #login-area {
+            max-width: 400px;
+            margin: 40px auto;
+            padding: 30px;
+            background: #fafafa;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        #login-area input {
+            padding: 10px 15px;
+            width: 100%;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            margin-bottom: 15px;
+        }
+
+        #login-area button {
+            padding: 10px 30px;
+            background: #2c3e50;
+            color: #fff;
+            border: none;
+            border-radius: 30px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        #login-area button:hover {
+            background: #1a252f;
+        }
+
+        .erro {
+            color: #e74c3c;
+            margin-top: 10px;
+        }
+
+        /* Conteúdo ADM (oculto inicialmente) */
+        #adm-content {
+            display: none;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px 30px;
+            background: #fafafa;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+        }
+
+        .form-grid label {
+            display: flex;
+            flex-direction: column;
+            font-weight: 500;
+            color: #34495e;
+            font-size: 14px;
+        }
+
+        .form-grid label input,
+        .form-grid label select {
+            margin-top: 5px;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .form-grid label input:focus,
+        .form-grid label select:focus {
+            border-color: #2c3e50;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(44, 62, 80, 0.1);
+        }
+
+        .form-grid label input[readonly] {
+            background: #eef2f7;
+            color: #2c3e50;
+        }
+
+        .form-actions {
+            grid-column: 1 / -1;
+            display: flex;
+            gap: 15px;
+            justify-content: flex-end;
+            margin-top: 10px;
+        }
+
+        .btn {
+            padding: 10px 30px;
+            border: none;
+            border-radius: 30px;
+            font-weight: 600;
+            font-size: 15px;
+            cursor: pointer;
+            transition: 0.3s;
+            background: #2c3e50;
+            color: #fff;
+        }
+
+        .btn:hover {
+            background: #1a252f;
+            transform: scale(1.02);
+        }
+
+        .btn-danger {
+            background: #e74c3c;
+        }
+
+        .btn-danger:hover {
+            background: #c0392b;
+        }
+
+        .btn-success {
+            background: #27ae60;
+        }
+
+        .btn-success:hover {
+            background: #1e8449;
+        }
+
+        .card-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .card-item {
+            background: #fff;
+            border-radius: 12px;
+            padding: 15px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            border: 1px solid #ecf0f1;
+        }
+
+        .card-item strong {
+            color: #2c3e50;
+        }
+
+        .card-item .remove-btn {
+            margin-top: 10px;
+            background: #e74c3c;
+            color: #fff;
+            border: none;
+            padding: 5px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .card-item .remove-btn:hover {
+            background: #c0392b;
+        }
+
+        .alert {
+            background: #eaf2f8;
+            padding: 12px 18px;
+            border-radius: 8px;
+            border-left: 5px solid #2c3e50;
+            margin-bottom: 20px;
+            color: #2c3e50;
+        }
+
+        .nav-tabs {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #ecf0f1;
+            padding-bottom: 15px;
+        }
+
+        .nav-tabs button {
+            background: #ecf0f1;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 30px;
+            font-size: 16px;
+            font-weight: 600;
+            color: #2c3e50;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .nav-tabs button:hover {
+            background: #d5dbdb;
+        }
+
+        .nav-tabs button.active {
+            background: #2c3e50;
+            color: #fff;
+        }
+
+        .tab {
+            display: none;
+            animation: fade 0.4s ease;
+        }
+
+        .tab.active {
+            display: block;
+        }
+
+        @keyframes fade {
+            0% {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width:768px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .container {
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>🔐 Módulo Administrativo</h1>
+
+        <!-- Tela de Login -->
+        <div id="login-area">
+            <h2 style="margin-bottom:20px;">Acesso restrito</h2>
+            <input type="password" id="senha-input" placeholder="Digite a senha" />
+            <button id="btn-login">Entrar</button>
+            <div id="erro-login" class="erro"></div>
+        </div>
+
+        <!-- Conteúdo ADM (protegido) -->
+        <div id="adm-content">
+            <div style="display:flex; justify-content:flex-end; margin-bottom:20px;">
+                <button id="btn-logout" class="btn btn-danger">Sair</button>
+            </div>
+
+            <div class="nav-tabs">
+                <button class="active" data-tab="tab-produtos">📦 Produtos</button>
+                <button data-tab="tab-colecoes">💰 Coleções</button>
+            </div>
+
+            <!-- Aba Produtos -->
+            <div id="tab-produtos" class="tab active">
+                <h2>Cadastrar Produto</h2>
+                <div class="alert">
+                    <strong>💡 Dica:</strong> Selecione a coleção para preencher o gasto por peça automaticamente. O
+                    preço final é calculado com 100% de lucro + gasto + 10% de taxa.
+                </div>
+                <form id="form-produto">
+                    <div class="form-grid">
+                        <label>Coleção *<select id="colecao" required>
+                                <option value="">-- Selecione --</option>
+                            </select></label>
+                        <label>Código *<input type="text" id="codigo" placeholder="Ex: P001" required></label>
+                        <label>Valor da Peça (R$) *<input type="number" id="valor-peca" step="0.01" min="0"
+                                placeholder="0,00" required></label>
+                        <label>Gasto por Peça (automático)<input type="text" id="gasto-peca" readonly
+                                placeholder="R$ 0,00"></label>
+                        <label>Preço Final (automático)<input type="text" id="preco-final" readonly
+                                placeholder="R$ 0,00"></label>
+                        <label>Link da Foto (Drive) *<input type="url" id="link-foto"
+                                placeholder="https://drive.google.com/file/d/..." required></label>
+                        <label>Fornecedor - Nome<input type="text" id="fornecedor-nome" placeholder="Nome"></label>
+                        <label>Fornecedor - Rede Social<input type="text" id="fornecedor-social"
+                                placeholder="@instagram"></label>
+                        <label>Fornecedor - Telefone<input type="text" id="fornecedor-telefone"
+                                placeholder="(00) 00000-0000"></label>
+                        <div class="form-actions"><button type="submit" class="btn">✅ Cadastrar</button></div>
+                    </div>
+                </form>
+                <div class="lista-container">
+                    <h3>📋 Produtos Cadastrados</h3>
+                    <div id="lista-produtos" class="card-list"></div>
+                </div>
+            </div>
+
+            <!-- Aba Coleções -->
+            <div id="tab-colecoes" class="tab">
+                <h2>Cadastrar Custos por Coleção</h2>
+                <div class="alert">
+                    <strong>📌</strong> Informe valor total gasto e quantidade de peças. O gasto por peça é calculado
+                    com R$ 3,00 adicionais para embalagem, entrega e etiquetas.
+                </div>
+                <form id="form-custo">
+                    <div class="form-grid">
+                        <label>Nome da Coleção *<input type="text" id="nome-colecao" placeholder="Ex: Inverno 2025"
+                                required></label>
+                        <label>Valor Total Gasto (R$) *<input type="number" id="valor-total" step="0.01" min="0"
+                                placeholder="0,00" required></label>
+                        <label>Quantidade de Peças *<input type="number" id="quantidade-pecas" min="1"
+                                placeholder="Ex: 10" required></label>
+                        <label>Gasto por Peça (calculado)<input type="text" id="gasto-calculado" readonly
+                                placeholder="R$ 0,00"></label>
+                        <div class="form-actions"><button type="submit" class="btn">➕ Cadastrar Coleção</button></div>
+                    </div>
+                </form>
+                <div class="lista-container">
+                    <h3>📂 Coleções Cadastradas</h3>
+                    <div id="lista-colecoes" class="card-list"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        (function () {
+            // ========== CONFIG ==========
+            const SENHA_ADMIN = 'Podeser20'; // Altere aqui a senha
+            const STORAGE_KEY_PRODUTOS = 'loja_produtos';
+            const STORAGE_KEY_COLECOES = 'loja_colecoes';
+
+            // ========== UTILITÁRIOS ==========
+            function getProdutos() { return JSON.parse(localStorage.getItem(STORAGE_KEY_PRODUTOS)) || []; }
+            function setProdutos(p) { localStorage.setItem(STORAGE_KEY_PRODUTOS, JSON.stringify(p)); }
+            function getColecoes() { return JSON.parse(localStorage.getItem(STORAGE_KEY_COLECOES)) || []; }
+            function setColecoes(c) { localStorage.setItem(STORAGE_KEY_COLECOES, JSON.stringify(c)); }
+            function formatMoney(v) { return 'R$ ' + v.toFixed(2).replace('.', ','); }
+            function parseMoney(v) { return parseFloat(v) || 0; }
+
+            // ========== RENDER ==========
+            function renderProdutos() {
+                const produtos = getProdutos();
+                const container = document.getElementById('lista-produtos');
+                if (!produtos.length) {
+                    container.innerHTML = '<p style="color:#999;">Nenhum produto cadastrado.</p>';
+                    return;
+                }
+                container.innerHTML = produtos.map((p, idx) => `
+                <div class="card-item">
+                    <strong>Código:</strong> ${p.codigo}<br>
+                    <strong>Coleção:</strong> ${p.colecao}<br>
+                    <strong>Valor Peça:</strong> ${formatMoney(p.valorPeca)}<br>
+                    <strong>Gasto/Peça:</strong> ${formatMoney(p.gastoPorPeca)}<br>
+                    <strong>Preço Final:</strong> <span style="color:#27ae60;font-weight:700;">${formatMoney(p.precoFinal)}</span><br>
+                    <strong>Fornecedor:</strong> ${p.fornecedorNome || '-'}<br>
+                    <button class="remove-btn" data-index="${idx}">🗑️ Remover</button>
+                </div>
+            `).join('');
+                document.querySelectorAll('#lista-produtos .remove-btn').forEach(btn => {
+                    btn.addEventListener('click', function () {
+                        const idx = parseInt(this.dataset.index);
+                        if (confirm('Remover este produto?')) {
+                            const prods = getProdutos();
+                            prods.splice(idx, 1);
+                            setProdutos(prods);
+                            renderProdutos();
+                            popularSelectColecoes();
+                        }
+                    });
+                });
+            }
+
+            function renderColecoes() {
+                const colecoes = getColecoes();
+                const container = document.getElementById('lista-colecoes');
+                if (!colecoes.length) {
+                    container.innerHTML = '<p style="color:#999;">Nenhuma coleção cadastrada.</p>';
+                    return;
+                }
+                container.innerHTML = colecoes.map((c, idx) => `
+                <div class="card-item">
+                    <strong>${c.nome}</strong><br>
+                    <strong>Valor Total:</strong> ${formatMoney(c.valorTotal)}<br>
+                    <strong>Qtd. Peças:</strong> ${c.quantidade}<br>
+                    <strong>Gasto por Peça:</strong> ${formatMoney(c.gastoPorPeca)}<br>
+                    <button class="remove-btn" data-index="${idx}">🗑️ Remover</button>
+                </div>
+            `).join('');
+                document.querySelectorAll('#lista-colecoes .remove-btn').forEach(btn => {
+                    btn.addEventListener('click', function () {
+                        const idx = parseInt(this.dataset.index);
+                        if (confirm('Remover esta coleção? Produtos vinculados também serão removidos.')) {
+                            let colecoes = getColecoes();
+                            const nomeRemovido = colecoes[idx].nome;
+                            colecoes.splice(idx, 1);
+                            setColecoes(colecoes);
+                            let produtos = getProdutos();
+                            produtos = produtos.filter(p => p.colecao !== nomeRemovido);
+                            setProdutos(produtos);
+                            renderColecoes();
+                            renderProdutos();
+                            popularSelectColecoes();
+                        }
+                    });
+                });
+            }
+
+            function popularSelectColecoes() {
+                const select = document.getElementById('colecao');
+                const colecoes = getColecoes();
+                const valorAtual = select.value;
+                select.innerHTML = '<option value="">-- Selecione --</option>';
+                colecoes.forEach(c => {
+                    const opt = document.createElement('option');
+                    opt.value = c.nome;
+                    opt.textContent = c.nome;
+                    select.appendChild(opt);
+                });
+                if (valorAtual && colecoes.some(c => c.nome === valorAtual)) {
+                    select.value = valorAtual;
+                }
+                atualizarGastoEPreco();
+            }
+
+            function atualizarGastoEPreco() {
+                const colecaoNome = document.getElementById('colecao').value;
+                const valorPeca = parseMoney(document.getElementById('valor-peca').value);
+                const colecoes = getColecoes();
+                let gasto = 0;
+                if (colecaoNome) {
+                    const found = colecoes.find(c => c.nome === colecaoNome);
+                    if (found) gasto = found.gastoPorPeca;
+                }
+                document.getElementById('gasto-peca').value = formatMoney(gasto);
+                const subtotal = (valorPeca * 2) + gasto;
+                const precoFinal = subtotal * 1.10;
+                document.getElementById('preco-final').value = formatMoney(precoFinal);
+            }
+
+            function atualizarGastoCalculado() {
+                const valorTotal = parseMoney(document.getElementById('valor-total').value);
+                const quantidade = parseInt(document.getElementById('quantidade-pecas').value) || 0;
+                if (quantidade > 0) {
+                    const gasto = (valorTotal / quantidade) + 3.00;
+                    document.getElementById('gasto-calculado').value = formatMoney(gasto);
+                } else {
+                    document.getElementById('gasto-calculado').value = '';
+                }
+            }
+
+            // ========== LOGIN ==========
+            function login(senha) {
+                if (senha === SENHA_ADMIN) {
+                    document.getElementById('login-area').style.display = 'none';
+                    document.getElementById('adm-content').style.display = 'block';
+                    document.getElementById('erro-login').textContent = '';
+                    // Carrega dados
+                    popularSelectColecoes();
+                    renderColecoes();
+                    renderProdutos();
+                    return true;
+                } else {
+                    document.getElementById('erro-login').textContent = 'Senha incorreta!';
+                    return false;
+                }
+            }
+
+            function logout() {
+                document.getElementById('login-area').style.display = 'block';
+                document.getElementById('adm-content').style.display = 'none';
+                document.getElementById('senha-input').value = '';
+                document.getElementById('erro-login').textContent = '';
+            }
+
+            document.getElementById('btn-login').addEventListener('click', function () {
+                const senha = document.getElementById('senha-input').value;
+                login(senha);
+            });
+            document.getElementById('senha-input').addEventListener('keypress', function (e) {
+                if (e.key === 'Enter') {
+                    document.getElementById('btn-login').click();
+                }
+            });
+            document.getElementById('btn-logout').addEventListener('click', logout);
+
+            // ========== EVENTOS DOS FORMULÁRIOS ==========
+            document.getElementById('form-custo').addEventListener('submit', function (e) {
+                e.preventDefault();
+                const nome = document.getElementById('nome-colecao').value.trim();
+                const valorTotal = parseMoney(document.getElementById('valor-total').value);
+                const quantidade = parseInt(document.getElementById('quantidade-pecas').value);
+                if (!nome || valorTotal <= 0 || !quantidade || quantidade <= 0) {
+                    alert('Preencha todos os campos corretamente.');
+                    return;
+                }
+                const colecoes = getColecoes();
+                if (colecoes.some(c => c.nome.toLowerCase() === nome.toLowerCase())) {
+                    alert('Já existe uma coleção com este nome.');
+                    return;
+                }
+                const gastoPorPeca = (valorTotal / quantidade) + 3.00;
+                colecoes.push({ nome, valorTotal, quantidade, gastoPorPeca });
+                setColecoes(colecoes);
+                this.reset();
+                document.getElementById('gasto-calculado').value = '';
+                renderColecoes();
+                popularSelectColecoes();
+                alert('Coleção cadastrada com sucesso!');
+            });
+
+            document.getElementById('form-produto').addEventListener('submit', function (e) {
+                e.preventDefault();
+                const colecao = document.getElementById('colecao').value;
+                const codigo = document.getElementById('codigo').value.trim();
+                const valorPeca = parseMoney(document.getElementById('valor-peca').value);
+                const linkFoto = document.getElementById('link-foto').value.trim();
+                const fornecedorNome = document.getElementById('fornecedor-nome').value.trim();
+                const fornecedorSocial = document.getElementById('fornecedor-social').value.trim();
+                const fornecedorTelefone = document.getElementById('fornecedor-telefone').value.trim();
+
+                if (!colecao || !codigo || valorPeca <= 0 || !linkFoto) {
+                    alert('Preencha todos os campos obrigatórios (*).');
+                    return;
+                }
+                const colecoes = getColecoes();
+                const found = colecoes.find(c => c.nome === colecao);
+                if (!found) {
+                    alert('Coleção não encontrada. Cadastre os custos primeiro.');
+                    return;
+                }
+                const gastoPorPeca = found.gastoPorPeca;
+                const subtotal = (valorPeca * 2) + gastoPorPeca;
+                const precoFinal = subtotal * 1.10;
+
+                const produtos = getProdutos();
+                if (produtos.some(p => p.codigo.toLowerCase() === codigo.toLowerCase())) {
+                    alert('Já existe um produto com este código.');
+                    return;
+                }
+                produtos.push({ colecao, codigo, valorPeca, gastoPorPeca, precoFinal, linkFoto, fornecedorNome, fornecedorSocial, fornecedorTelefone });
+                setProdutos(produtos);
+                this.reset();
+                document.getElementById('gasto-peca').value = '';
+                document.getElementById('preco-final').value = '';
+                renderProdutos();
+                popularSelectColecoes();
+                alert('Produto cadastrado com sucesso!');
+            });
+
+            document.getElementById('colecao').addEventListener('change', atualizarGastoEPreco);
+            document.getElementById('valor-peca').addEventListener('input', atualizarGastoEPreco);
+            document.getElementById('valor-total').addEventListener('input', atualizarGastoCalculado);
+            document.getElementById('quantidade-pecas').addEventListener('input', atualizarGastoCalculado);
+
+            // ========== NAVEGAÇÃO ENTRE ABAS ==========
+            document.querySelectorAll('.nav-tabs button').forEach(btn => {
+                btn.addEventListener('click', function () {
+                    document.querySelectorAll('.nav-tabs button').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                    document.getElementById(this.dataset.tab).classList.add('active');
+                    if (this.dataset.tab === 'tab-colecoes') {
+                        atualizarGastoCalculado();
+                    }
+                });
+            });
+
+            // ========== INICIALIZAÇÃO ==========
+            // Tenta manter login se já estiver (não há persistência, mas pode ser adicionada)
+            // Por padrão, mostra login.
+            document.getElementById('login-area').style.display = 'block';
+            document.getElementById('adm-content').style.display = 'none';
+        })();
+    </script>
+</body>
+
+</html>
