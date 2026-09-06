@@ -35,6 +35,43 @@
             letter-spacing: 2px;
         }
 
+        /* Filtro */
+        .filtro-area {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-bottom: 30px;
+            background: #fafafa;
+            padding: 15px 20px;
+            border-radius: 12px;
+        }
+
+        .filtro-area label {
+            font-weight: 600;
+            color: #2c3e50;
+            font-size: 15px;
+        }
+
+        .filtro-area select {
+            padding: 10px 18px;
+            border: 2px solid #ddd;
+            border-radius: 30px;
+            font-size: 15px;
+            background: #fff;
+            cursor: pointer;
+            outline: none;
+            min-width: 180px;
+            transition: 0.3s;
+        }
+
+        .filtro-area select:hover,
+        .filtro-area select:focus {
+            border-color: #2c3e50;
+        }
+
+        /* Grid de produtos */
         .vitrine-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
@@ -106,6 +143,17 @@
             margin: 5px 0;
         }
 
+        .vitrine-card .info .status {
+            font-size: 13px;
+            font-weight: 600;
+            color: #e74c3c;
+            background: #fde8e8;
+            padding: 2px 12px;
+            border-radius: 20px;
+            display: inline-block;
+            align-self: flex-start;
+        }
+
         .vitrine-card .info .fornecedor {
             font-size: 13px;
             color: #555;
@@ -135,6 +183,11 @@
             .container {
                 padding: 15px;
             }
+
+            .filtro-area {
+                flex-direction: column;
+                align-items: stretch;
+            }
         }
     </style>
 </head>
@@ -142,8 +195,17 @@
 <body>
     <div class="container">
         <h1>🛍️ Minha Loja Virtual - Vitrine</h1>
+
+        <!-- Filtro por coleção -->
+        <div class="filtro-area">
+            <label for="filtro-colecao">🔍 Filtrar por coleção:</label>
+            <select id="filtro-colecao">
+                <option value="">-- Todas as coleções --</option>
+            </select>
+        </div>
+
         <div id="vitrine" class="vitrine-grid"></div>
-        <p id="sem-produtos" class="sem-produtos" style="display:none;">Nenhum produto cadastrado ainda.</p>
+        <p id="sem-produtos" class="sem-produtos" style="display:none;">Nenhum produto disponível para esta coleção.</p>
     </div>
 
     <script>
@@ -171,17 +233,54 @@
                 return link;
             }
 
+            // Preenche o dropdown com as coleções únicas dos produtos disponíveis
+            function popularFiltro(produtos) {
+                const select = document.getElementById('filtro-colecao');
+                // Obtém coleções únicas (apenas dos produtos disponíveis)
+                const colecoes = [...new Set(produtos.map(p => p.colecao))].filter(Boolean);
+                const valorAtual = select.value;
+
+                // Mantém a opção "Todas"
+                select.innerHTML = '<option value="">-- Todas as coleções --</option>';
+                colecoes.sort().forEach(c => {
+                    const opt = document.createElement('option');
+                    opt.value = c;
+                    opt.textContent = c;
+                    select.appendChild(opt);
+                });
+
+                // Restaura o valor selecionado se ainda existir
+                if (valorAtual && colecoes.includes(valorAtual)) {
+                    select.value = valorAtual;
+                }
+            }
+
             function renderVitrine() {
                 const produtos = getProdutos();
+                // Filtra apenas produtos disponíveis (disponivel !== false)
+                const disponiveis = produtos.filter(p => p.disponivel !== false);
+                const filtro = document.getElementById('filtro-colecao').value;
+                let filtrados = disponiveis;
+
+                if (filtro) {
+                    filtrados = disponiveis.filter(p => p.colecao === filtro);
+                }
+
                 const container = document.getElementById('vitrine');
                 const semMsg = document.getElementById('sem-produtos');
-                if (produtos.length === 0) {
+
+                // Atualiza as opções do filtro com base nos produtos disponíveis
+                popularFiltro(disponiveis);
+
+                if (filtrados.length === 0) {
                     container.innerHTML = '';
                     semMsg.style.display = 'block';
+                    semMsg.textContent = filtro ? 'Nenhum produto disponível para esta coleção.' : 'Nenhum produto cadastrado ainda.';
                     return;
                 }
                 semMsg.style.display = 'none';
-                container.innerHTML = produtos.map(p => {
+
+                container.innerHTML = filtrados.map(p => {
                     const imgUrl = getDriveImageUrl(p.linkFoto);
                     return `
                         <div class="vitrine-card">
@@ -209,13 +308,17 @@
                 }).join('');
             }
 
-            // Atualiza a vitrine sempre que houver mudança no localStorage (de outra aba)
+            // Evento de mudança no filtro
+            document.getElementById('filtro-colecao').addEventListener('change', renderVitrine);
+
+            // Atualiza a vitrine quando houver mudança no localStorage (outra aba)
             window.addEventListener('storage', function (e) {
                 if (e.key === STORAGE_KEY_PRODUTOS) {
                     renderVitrine();
                 }
             });
 
+            // Renderização inicial
             renderVitrine();
         })();
     </script>
